@@ -17,7 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-public class MockAnnotationTest {
+public class MockitoAnnotationTest {
+
+    @Mock
+    private ApplicationDao applicationDao;
+
+    @InjectMocks
+    private ApplicationService applicationService;
+
+    ///////////////////////////////////////////////////////
 
     @Autowired
     ApplicationContext context;
@@ -28,12 +36,6 @@ public class MockAnnotationTest {
     @Autowired
     StudentGrades studentGrades;
 
-    @Mock
-    private ApplicationDao applicationDao;
-
-    @InjectMocks
-    private ApplicationService applicationService;
-
     @BeforeEach
     public void beforeEach() {
         collegeStudent.setFirstname("Jane");
@@ -42,7 +44,7 @@ public class MockAnnotationTest {
         collegeStudent.setStudentGrades(studentGrades);
     }
 
-    @DisplayName("When 'xyz' - assert 'PDQ' && verify")
+    @DisplayName("When 'xyz' - assert 'pdq' - verify 'zip'")
     @Test
     void assertEqualsTestAddGrades() {
         when(applicationDao.addGradeResultsForSingleClass
@@ -55,6 +57,7 @@ public class MockAnnotationTest {
         verify(applicationDao).addGradeResultsForSingleClass(
                 studentGrades.getMathGradeResults());
 
+        // this is fun for seeing how many times it was called
         verify(applicationDao, times(1)).addGradeResultsForSingleClass(
                 studentGrades.getMathGradeResults());
     }
