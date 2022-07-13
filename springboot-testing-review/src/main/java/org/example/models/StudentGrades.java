@@ -1,33 +1,23 @@
 package org.example.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Component
 public class StudentGrades {
 
     List<Double> mathGradeResults;
-    /*
-     * CAN HAVE MULTIPLE DIFFERENT TYPES OF GRADES
-     * FOR 2.x WE WILL ONLY HAVE A MATH GRADE
-     *  */
-
-    public StudentGrades() {
-    }
-
-    public StudentGrades(List<Double> mathGradeResults) {
-        this.mathGradeResults = mathGradeResults;
-        /*
-        Add other subject grades here in future lessons
-        */
-    }
-
-        /*
-        Add other subject grades here in future lessons
-        */
 
     public double addGradeResultsForSingleClass(List<Double> grades) {
         double result = 0;
@@ -63,18 +53,4 @@ public class StudentGrades {
         return null;
     }
 
-    public List<Double> getMathGradeResults() {
-        return mathGradeResults;
-    }
-
-    public void setMathGradeResults(List<Double> mathGradeResults) {
-        this.mathGradeResults = mathGradeResults;
-    }
-
-    @Override
-    public String toString() {
-        return "StudentGrades{" +
-                "mathGradeResults=" + mathGradeResults +
-                '}';
-    }
 }
