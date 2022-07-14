@@ -16,6 +16,7 @@ public class GradebookController {
 	@Autowired
 	private StudentAndGradeService studentService;
 
+	////////////////////////////////////////////////////
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String getStudents(Model m) {
@@ -34,6 +35,23 @@ public class GradebookController {
 
 		return "index";
 	}
+
+	////////////////////////////////////////////////////
+
+	@GetMapping("/delete/student/{id}")
+	public String deleteStudent(@PathVariable int id, Model m) {
+
+		if (!studentService.checkIfStudentIsNull(id)) return "error";
+
+		studentService.deleteStudent(id);
+
+		Iterable<CollegeStudent> collegeStudents = studentService.getGradebook();
+		m.addAttribute("students", collegeStudents);
+
+		return "index";
+	}
+
+	////////////////////////////////////////////////////
 
 	@GetMapping("/studentInformation/{id}")
 	public String studentInformation(@PathVariable int id, Model m) {

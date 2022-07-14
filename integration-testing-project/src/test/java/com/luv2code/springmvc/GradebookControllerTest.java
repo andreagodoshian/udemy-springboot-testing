@@ -143,5 +143,33 @@ public class GradebookControllerTest {
         assertNotNull(verifyStudent, "Andria doesn't want to say anything.");
     }
 
+    @Test
+    void testDeleteStudentHttpRequest() throws Exception {
+        assertTrue(studentDao.findById(1).isPresent()); // @BeforeEach!!
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
+                .get("/delete/student/{id}", 1))
+                .andExpect(status().isOk()).andReturn();
+
+        ModelAndView mav = mvcResult.getModelAndView();
+
+        ModelAndViewAssert.assertViewName(mav, "index");
+
+        assertFalse(studentDao.findById(1).isPresent());
+    }
+
+    @Test
+    void testDeleteStudentHttpErrorPage() throws Exception {
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
+                        .get("/delete/student/{id}", 0))
+                .andExpect(status().isOk()).andReturn();
+
+        ModelAndView mav = mvcResult.getModelAndView();
+
+        ModelAndViewAssert.assertViewName(mav, "error");
+
+    }
+
 
 }
