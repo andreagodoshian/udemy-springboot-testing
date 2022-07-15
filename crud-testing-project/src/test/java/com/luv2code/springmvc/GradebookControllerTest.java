@@ -188,9 +188,47 @@ public class GradebookControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)));
 
-        // ~~~~~~~~~~~~~~~~~ //
         CollegeStudent verifyStudent = studentDao.findByEmailAddress("trent@mystiksprial.com");
         assertNotNull(verifyStudent, "Didn't we add Trent?");
+    }
+
+    @Test
+    void testPostGradeHttp() throws Exception {
+        this.mockMvc.perform(post("/grades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("grade", "89.00")
+                .param("gradeType", "math")
+                .param("studentId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.firstname", is("Sharon")))
+                .andExpect(jsonPath("$.lastname", is("Marsh")))
+                .andExpect(jsonPath("$.emailAddress", is("sharon@southparkstudios.com")))
+                .andExpect(jsonPath("$.studentGrades.mathGradeResults", hasSize(2)));
+    }
+
+    @Test
+    void testErrorPostGradeHttp() throws Exception {
+        // invalid student id
+        this.mockMvc.perform(post("/grades")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("grade", "89.00")
+                        .param("gradeType", "math")
+                        .param("studentId", "0"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status", is(404)))
+                .andExpect(jsonPath("$.message", is("Student or Grade was not found")));
+
+        // invalid subject
+        this.mockMvc.perform(post("/grades")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("grade", "89.00")
+                        .param("gradeType", "music")
+                        .param("studentId", "1"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status", is(404)))
+                .andExpect(jsonPath("$.message", is("Student or Grade was not found")));
     }
 
     ///////////////////////////
@@ -213,12 +251,38 @@ public class GradebookControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/student/{id}", 0))
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.status", is(404)))
-                .andExpect(jsonPath("$.message",
-                        is("Student or Grade was not found")));
+                .andExpect(jsonPath("$.message", is("Student or Grade was not found")));
     }
 
-    ///////////////////////////
+    @Test
+    void testDeleteGradeHttp() throws Exception {
+        Optional<MathGrade> mathGrade = mathGradeDao.findById(1);
+        assertTrue(mathGrade.isPresent());
 
+        // verify that there are 0 math grades
+        mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}", 1, "math"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.firstname", is("Sharon")))
+                .andExpect(jsonPath("$.lastname", is("Marsh")))
+                .andExpect(jsonPath("$.emailAddress", is("sharon@southparkstudios.com")))
+                .andExpect(jsonPath("$.studentGrades.mathGradeResults", hasSize(0)));
+    }
 
+    @Test
+    void testErrorDeleteGradeHttp() throws Exception {
+        // just send a request for an invalid grade_id
+        mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}", 2, "math"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status", is(404)))
+                .andExpect(jsonPath("$.message", is("Student or Grade was not found")));
+
+        // just send a request for an invalid subject
+        mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}", 1, "physics"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status", is(404)))
+                .andExpect(jsonPath("$.message", is("Student or Grade was not found")));
+    }
 
 }
