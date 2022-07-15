@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import java.util.Optional;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -134,7 +136,7 @@ public class GradebookControllerTest {
     ///////////////////////////
 
     @Test
-    void testGetStudentsHttp() throws Exception {
+    void testGetAllStudentsHttp() throws Exception {
         student.setFirstname("Jane");
         student.setLastname("Lane");
         student.setEmailAddress("jane@sicksadworld.com");
@@ -146,6 +148,33 @@ public class GradebookControllerTest {
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$", hasSize(2)));
     }
+
+    @Test
+    void testGetStudentInfoHttp() throws Exception {
+        Optional<CollegeStudent> student = studentDao.findById(1);
+        assertTrue(student.isPresent());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}", 1))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.firstname", is("Sharon")))
+                .andExpect(jsonPath("$.lastname", is("Marsh")))
+                .andExpect(jsonPath("$.emailAddress", is("sharon@southparkstudios.com")));
+    }
+
+    @Test
+    void testErrorGetStudentInfoHttp() throws Exception {
+        Optional<CollegeStudent> student = studentDao.findById(0);
+        assertFalse(student.isPresent());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}", 0))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status", is(404)))
+                .andExpect(jsonPath("$.message", is("Student or Grade was not found")));
+    }
+
+    ///////////////////////////
 
     @Test
     void testPostStudentHttp() throws Exception {
@@ -160,10 +189,11 @@ public class GradebookControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)));
 
         // ~~~~~~~~~~~~~~~~~ //
-
         CollegeStudent verifyStudent = studentDao.findByEmailAddress("trent@mystiksprial.com");
         assertNotNull(verifyStudent, "Didn't we add Trent?");
     }
+
+    ///////////////////////////
 
     @Test
     void testDeleteStudentHttp() throws Exception {
@@ -188,5 +218,7 @@ public class GradebookControllerTest {
     }
 
     ///////////////////////////
+
+
 
 }
